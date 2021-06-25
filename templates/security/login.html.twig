@@ -1,0 +1,55 @@
+{% extends 'base.html.twig' %}
+{% block title %}Let's go to the mare!
+{% endblock %}
+{% block body %}
+	<form method="post" class="rounded mx-auto flex flex-col align-center w-2/3 md:w-1/2">
+		{% if error is defined and error is not empty %}
+			<div class="bg-red-500 text-white p-2">
+				{{ error.messageKey|trans(error.messageData, 'security') }}
+			</div>
+		{% endif %}
+		{% if app.user %}
+			<div class="mb-3">
+				You are logged in as
+				{{ app.user.username }},
+				<a href="{{ path('app_logout') }}">Logout</a>
+			</div>
+		{% endif %}
+
+		<h1 class="text-center md:tracking-widest text-yellow-300 text-shadow font-thin text-2xl my-3">
+			Fill in below to enter the mare aux canards
+		</h1>
+		<div class="mx-auto md:w-2/3 flex flex-col align-center mb-3">
+			<label for="inputEmail" class="text-white text-shadow">Email</label>
+			<input type="email" value="{{ error is defined and error is not empty ? last_username : '' }}" name="email" id="inputEmail" class="mb-2 p-2 rounded-sm bg-green-700 focus:bg-green-900 text-white" autocomplete="email" required autofocus/>
+			<label for="inputPassword" class="text-white text-shadow">Password</label>
+			<input type="password" name="password" id="inputPassword" class="mb-4 p-2 rounded-sm bg-green-700 focus:bg-green-900 text-white" autocomplete="current-password" required/>
+		</div>
+
+		<input
+		type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}"/>
+
+		<div class="mx-auto flex items-center gap-4">
+			<button class="
+			      border-transparent border-4
+			      bg-white
+			      text-green-700
+			      hover:text-green-900
+			      font-bold
+			      py-1
+			      px-2
+			      rounded
+			      transition
+			      transform
+			      ease-in
+			      hover:scale-125
+                  hover:shadow-lg
+			    " type="submit">
+				Login
+			</button>
+			<label><input type="checkbox" name="_remember_me" /> Remember me </label>
+		</div>
+		<a class="mt-2 text-center underline text-red-900 hover:text-red-700" href="{{ path('app_register') }}">Or Register</a>
+		<a class="mt-2 text-center underline text-blue-900 hover:text-blue-700" href="{{ path('connect_google_start') }}">Or Connect with Google</a>
+	</form>
+{% endblock %}

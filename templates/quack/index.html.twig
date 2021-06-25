@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+{% block title %}Quacks
+{% endblock %}
+{% block body %}
+	<div class="container w-full md:max-w-3xl mx-auto pt-20">
+		{% include 'quack/title.html.twig' %}
+		{% if quacks is defined and quacks is not empty %}
+			{% set i = 1 %}
+			{% for quack in quacks %}
+				<div class="relative p-6 bg-gradient-to-tr from-green-100 to-transparent rounded-md shadow-md mb-2">
+					<div class="absolute right-2">
+						<div class="flex content-start justify-center gap-2">
+							{% if user is not null and quack.getDuck().getId() == user.getId() %}
+							<a class="bg-white p-2 rounded-xl shadow-sm text-sm uppercase cursor-pointer hover:shadow-xl transition-all ease-in" href="{{ path('edit_quack', { id: quack.getId() }) }}">
+								Edit
+							</a>
+							<a class="w-4 md:w-6 cursor-pointer transform transition-all ease-in hover:scale-125 flex content-center" href="{{ path('delete_quack', { id: quack.getId() }) }}"><img src="{{ asset('img/icons/delete.svg') }}" alt="Delete"></img>
+							{% endif %}
+						</div>
+					</a>
+				</div>
+				<h3 class="tracking-widest uppercase font-thin">Quack n°
+					{{ i }}</h3>
+				<span class="text-sm font-light">le
+					{{ quack.getCreatedAt()|format_datetime('full', 'none', locale='fr') }} par {{ quack.getDuck().getDuckName() }}</span>
+				<div class="flex justify-between">
+					<div class="mt-2 p-2 max-h-12 bg-green-100 max-w-max rounded-md">
+						{{ quack.getContent()|raw }}
+					</div>
+					{% if quack.getPicture() is not empty %}<img class="w-32 mr-4" src="/uploads/pictures/{{ quack.getPicture() }}"></img>{% endif %}
+				</div>
+			</div>
+			{% set i = i + 1 %}
+		{% endfor %}
+	{% else %}
+		All ducks have been hunt.
+	{% endif %}
+</div>{% endblock %}

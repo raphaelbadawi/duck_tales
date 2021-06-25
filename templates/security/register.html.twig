@@ -1,0 +1,79 @@
+{% extends 'base.html.twig' %}
+{% block title %}Register to the mare!
+{% endblock %}
+{% block body %}
+	{% if errors is defined and errors is not empty %}
+		{% for error in errors %}
+			<div class="bg-red-500 text-white p-2">
+				{{ error.message }}
+			</div>
+		{% endfor %}
+	{% endif %}
+	<form method="post" class="rounded mx-auto flex flex-col align-center w-2/3 md:w-1/2">
+		<h1 class="
+				      text-center
+				      md:tracking-widest
+				      text-yellow-300 text-shadow
+				      font-thin
+				      text-2xl
+				      my-3
+				    ">
+			This is your green ticket to the mare aux canards
+		</h1>
+		<div class="mx-auto md:w-2/3 flex flex-col align-center mb-3">
+			<div class="flex justify-between gap-2">
+				<div class="flex flex-col">
+					<label for="inputFistName" class="text-white text-shadow">First Name</label>
+					<input type="text" name="first_name" id="inputFirstName" class="mb-2 p-2 rounded-sm bg-green-700 focus:bg-green-900 text-white" required autofocus/>
+				</div>
+				<div class="flex flex-col">
+					<label for="inputLastName" class="text-white text-shadow">Last Name</label>
+					<input type="text" name="last_name" id="inputLastName" class="mb-2 p-2 rounded-sm bg-green-700 focus:bg-green-900 text-white" required autofocus/>
+				</div>
+				<div class="flex flex-col">
+					<label for="inputDuckName" class="text-white text-shadow">Duck Name</label>
+					<input type="text" name="duck_name" id="inputDuckName" class="mb-2 p-2 rounded-sm bg-green-700 focus:bg-green-900 text-white" required autofocus/>
+				</div>
+			</div>
+			<label for="inputEmail" class="text-white text-shadow">Email</label>
+			<input type="email" name="email" id="inputEmail" class="
+				        w-2/3
+				        mb-2
+				        p-2
+				        rounded-sm
+				        bg-green-700
+				        focus:bg-green-900
+				        text-white
+				      " required autofocus/>
+			<label for="inputPassword" class="text-white text-shadow">Password</label>
+			<input type="password" name="password" id="inputPassword" class="
+				        w-2/3
+				        mb-4
+				        p-2
+				        rounded-sm
+				        bg-green-700
+				        focus:bg-green-900
+				        text-white
+				      " required/>
+		</div>
+		<button class="
+			      mx-auto
+			      w-1/2
+			      border-transparent border-4
+			      bg-white
+			      text-green-700
+			      hover:text-green-900
+			      font-bold
+			      py-1
+			      px-2
+			      rounded
+			      transition
+			      transform
+			      ease-in
+			      hover:scale-125 hover:shadow-lg
+			    " type="submit">
+			Register
+		</button>
+		<a class="mt-2 text-center underline text-green-900 hover:text-green-700" href="{{ path('app_login') }}">Or Login</a>
+	</form>
+{% endblock %}
