@@ -67,10 +67,16 @@ class Quack
      */
     private $isOld;
 
+    /**
+     * @ORM\ManyToMany(targetEntity=Duck::class, mappedBy="likes", orphanRemoval=true, cascade={"persist"})
+     */
+    private $ducks;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
         $this->children = new ArrayCollection();
+        $this->ducks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -78,7 +84,7 @@ class Quack
         return $this->id;
     }
 
-    public function getParent()
+    public function getParent(): self
     {
         return $this->parent;
     }
@@ -88,7 +94,7 @@ class Quack
         $this->parent = $parent;
     }
 
-    public function getComments()
+    public function getComments(): Collection
     {
         return $this->comments;
     }
@@ -197,6 +203,31 @@ class Quack
     public function setIsOld(?bool $isOld): self
     {
         $this->isOld = $isOld;
+
+        return $this;
+    }
+
+    public function getDucks(): Collection
+    {
+        return $this->ducks;
+    }
+
+    public function addDuck(Duck $duck): self
+    {
+        if (!$this->ducks->contains($duck)) {
+            $this->ducks[] = $duck;
+            $duck->addLike($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUser(Duck $duck): self
+    {
+        if ($this->ducks->contains($duck)) {
+            $this->ducks->removeElement($duck);
+            $duck->removeLike($this);
+        }
 
         return $this;
     }

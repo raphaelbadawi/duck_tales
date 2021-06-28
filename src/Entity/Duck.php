@@ -67,9 +67,15 @@ class Duck implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $quacks;
 
+    /**
+     * @ORM\ManyToMany(targetEntity=Quack::class, inversedBy="ducks")
+     */
+    private $likes;
+
     public function __construct()
     {
         $this->quacks = new ArrayCollection();
+        $this->likes = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -236,6 +242,27 @@ class Duck implements UserInterface, PasswordAuthenticatedUserInterface
             }
         }
 
+        return $this;
+    }
+
+    public function getLikes(): Collection
+    {
+        return $this->likes;
+    }
+
+    public function addLike(Quack $like): self
+    {
+        if (!$this->likes->contains($like)) {
+            $this->likes[] = $like;
+        }
+        return $this;
+    }
+
+    public function removeLike(Quack $like): self
+    {
+        if ($this->likes->contains($like)) {
+            $this->likes->removeElement($like);
+        }
         return $this;
     }
 }

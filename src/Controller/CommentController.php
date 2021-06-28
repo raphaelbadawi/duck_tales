@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Duck;
 use App\Entity\Quack;
 use DateTimeImmutable;
 use App\Service\UrlHelper;
@@ -27,6 +28,10 @@ class CommentController extends AbstractController
         $comment->setContent($urlHelper->addUrlTagToContent($request->get('comment')));
         $comment->setCreatedAt(new DateTimeImmutable());
 
+        $duck = $entityManager->getRepository(Duck::class)->findOneBy(['id' => $this->getUser()->getId()]);
+        $comment->setDuck($duck);
+        $comment->setIsOld(false);
+
         // validate comment
         $errors = $validator->validate($comment);
         if (count($errors) > 0) {
@@ -41,6 +46,7 @@ class CommentController extends AbstractController
         // persist all the stuff
         $entityManager->persist($comment);
         $entityManager->persist($quack);
+        $entityManager->flush();
 
         return $this->redirectToRoute('quacks');
     }
