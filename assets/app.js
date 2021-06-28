@@ -11,6 +11,7 @@ import "./styles/app.scss";
 // start the Stimulus application
 import "./bootstrap";
 
+// file upload stuff
 const quackFileUpload = document.querySelector('[for="quackFileUpload"]');
 const quackFileUploadIcon = document.querySelector("#quackFileUploadIcon");
 const quackFileUploadInput = document.querySelector("#quackFileUpload");
@@ -44,4 +45,22 @@ if (quackFileUpload) {
   closePicturePreview.addEventListener("click", () => {
     quackImagePreviewContainer.classList.add("opacity-0");
   });
+}
+
+// toggle comments stuff
+const commentsTogglers = document.querySelectorAll(".toggleComment");
+const commentsClasses = ["p-0", "h-0", "p-4", "h-full"];
+
+if (commentsTogglers.length > 0) {
+  for (const commentsToggler of commentsTogglers) {
+    commentsToggler.addEventListener("click", (e) => {
+      const commentBoxId = e.target.getAttribute("id").split("Comment")[1];
+      const targetCommentBox = document.querySelector(
+        `#commentBox${commentBoxId}`
+      );
+      for (const commentsClass of commentsClasses) {
+        targetCommentBox.classList.toggle(commentsClass);
+      }
+    });
+  }
 }

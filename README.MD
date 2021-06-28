@@ -4,10 +4,14 @@
 
 This is a basic Twitter clone, but instead of birds we have ducks.
 
-## Use
+## Install
 
 - clone the repo
 - install PHP dependencies `composer install`
 - install JS dependencies `yarn install` (you may also use npm)
 - run `yarn watch` to transpile CSS/JS assets
 - run `symfony server:start` to launch the dev server (make sure you have installed Symfony globally via Composer)
+
+## Configuration
+- in order for the database to work, please set up the DATABASE_URL field in .env, we recommand a sqlite driver in a dev environment (for example `DATABASE_URL="sqlite:///%kernel.project_dir%/var/data.db"`)
+- in order for Google OAuth to work, please fulfill OAUTH_GOOGLE_ID and OAUTH_GOOFLE_SECRET fields in .env with your Google OAuth keys

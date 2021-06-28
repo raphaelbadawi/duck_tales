@@ -61,7 +61,8 @@
 				        " type="submit">
 				Quack!
 			</button>
-			<button class="
+			<a href="{{ path('quacks') }}">
+				<button class="
 				          flex-shrink-0
 				          border-transparent border-4
 				          text-green-700
@@ -71,8 +72,9 @@
 				          px-2
 				          rounded
 				        " type="button">
-				Cancel
-			</button>
+					Cancel
+				</button>
+			</a>
 		</div>
 	</form>
 	<div id="picturePreviewContainer" class="relative mt-8 w-1/2 mx-auto {% if quack is not defined or quack.getPicture() is null %} opacity-0 {% endif %} transition-all duration-500 ease-in">

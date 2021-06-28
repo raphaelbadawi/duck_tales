@@ -1,0 +1,46 @@
+<form action="{{ path('add_comment', {'id': id}) }}" class="w-full" method="POST">
+	<div class="flex items-center border-b border-green-700 py-2">
+		<input name="comment" class="
+			        placeholder-green-900
+			        appearance-none
+			        bg-transparent
+			        border-none
+			        w-full
+			        text-white
+			        mr-3
+			        py-1
+			        px-2
+			        leading-tight
+			        focus:outline-none
+			      " type="text" placeholder="Quack Me Harder!" aria-label="comment" />
+		<button class="
+			        flex-shrink-0
+			        bg-green-700
+			        hover:bg-green-900
+			        border-green-700
+			        hover:border-green-900
+			        text-sm
+			        border-4
+			        text-white
+			        py-1
+			        px-2
+			        rounded
+			      " type="submit">
+			Comment!
+		</button>
+		<a href="{{ path('quacks') }}">
+			<button class="
+				          flex-shrink-0
+				          border-transparent border-4
+				          text-green-700
+				          hover:text-green-900
+				          text-sm
+				          py-1
+				          px-2
+				          rounded
+				        " type="button">
+				Cancel
+			</button>
+		</a>
+	</div>
+</form>

@@ -6,8 +6,8 @@ use App\Entity\Tag;
 use App\Entity\Duck;
 use App\Entity\Quack;
 use DateTimeImmutable;
+use App\Service\UrlHelper;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\ORM\Mapping\Entity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -38,9 +38,9 @@ class QuackController extends AbstractController
     }
 
     // abstraction to avoid code duplication
-    private function updateQuackFields(ValidatorInterface $validator, $quack, String $content, Duck $duck, Int $previousId = 0): Quack|Response
+    private function updateQuackFields(ValidatorInterface $validator, UrlHelper $urlHelper, $quack, String $content, Duck $duck, Int $previousId = 0): Quack|Response
     {
-        $quack->setContent($this->addUrlTagToContent($content));
+        $quack->setContent($urlHelper->addUrlTagToContent($content));
         $quack->setCreatedAt(new DateTimeImmutable());
         $quack->setDuck($duck);
         if (null === $quack->getOldId() && $previousId > 0) {
@@ -89,108 +89,6 @@ class QuackController extends AbstractController
         return $tagsArray;
     }
 
-    private function parseUrlThumbnail(array $urlMatch)
-    {
-        // parses the url
-        $url = htmlspecialchars(trim($urlMatch[0]));
-        $urlData = parse_url($url);
-        $host = $urlData['host'];
-        $file = fopen($url, 'r');
-
-        // adds it to a string content
-        $content = '';
-        while (!feof($file)) {
-            $content .= fgets($file, 1024);
-        }
-
-        // get meta tags as an entrypoint to relevant informations
-        $meta_tags = get_meta_tags($url);
-
-        // gets the title
-        $title = '';
-
-        if (array_key_exists('og:title', $meta_tags)) {
-            $title = $meta_tags['og:title'];
-        } else if (array_key_exists('twitter:title', $meta_tags)) {
-            $title = $meta_tags['twitter:title'];
-        } else {
-            $title_pattern = '/<title>(.+)<\/title>/i';
-            preg_match_all($title_pattern, $content, $title);
-
-            if (!is_array($title[1])) {
-                $title = $title[1];
-            } else {
-                if (count($title[1]) > 0) {
-                    $title = $title[1][0];
-                } else {
-                    $title = 'Title not found!';
-                }
-            }
-        }
-
-        $title = ucfirst($title);
-
-        // get the description
-        $desc = '';
-
-        if (array_key_exists('description', $meta_tags)) {
-            $desc = $meta_tags['description'];
-        } else if (array_key_exists('og:description', $meta_tags)) {
-            $desc = $meta_tags['og:description'];
-        } else if (array_key_exists('twitter:description', $meta_tags)) {
-            $desc = $meta_tags['twitter:description'];
-        } else {
-            $desc = 'Description not found!';
-        }
-
-        $desc = ucfirst($desc);
-
-        // get the picture
-        $img_url = '';
-
-        if (array_key_exists('og:image', $meta_tags)) {
-            $img_url = $meta_tags['og:image'];
-        } else if (array_key_exists('og:image:src', $meta_tags)) {
-            $img_url = $meta_tags['og:image:src'];
-        } else if (array_key_exists('twitter:image', $meta_tags)) {
-            $img_url = $meta_tags['twitter:image'];
-        } else if (array_key_exists('twitter:image:src', $meta_tags)) {
-            $img_url = $meta_tags['twitter:image:src'];
-        } else {
-            // image not found in meta tags so find it from content
-            $img_pattern = '/<img[^>]*' . 'src=[\"|\'](.*)[\"|\']/Ui';
-            $images = '';
-            preg_match_all($img_pattern, $content, $images);
-
-            $total_images = is_array($images[1]) ? count($images[1]) : 0;
-            if ($total_images > 0) {
-                $images = $images[1];
-                for ($i = 0; $i < $total_images; $i++) {
-                    if ($images[$i][0] == "/" ? getimagesize("https://" . $host . $images[$i]) : getimagesize($images[$i])) {
-                        list($width, $height, $type, $attr) = $images[$i][0] == "/" ? getimagesize("https://" . $host . $images[$i]) : getimagesize($images[$i]);
-                        if ($width > 100) { // we don't want a mere icon, so we filter by width
-                            $img_url = $images[$i][0] == "/" ? getimagesize("https://" . $host . $images[$i]) : getimagesize($images[$i]);
-                        }
-                        break;
-                    }
-                }
-            }
-        }
-        $urlTag = "<div class='border-solid border-black border-2 rounded-sm block w-full'><a href='$url'><div>$title</div>";
-        $urlTag .= "<div ><img class='w-32 mx-auto my-2 rounded-md' src='$img_url' alt='Picture preview'></div>";
-        $urlTag .= "<div class='text-sm'>$desc</div>";
-        $urlTag .= "<div>$host</div></a></div>";
-        return $urlTag;
-    }
-
-    private function addUrlTagToContent(String $content): array|String|null // I was wrong this is even worse
-    {
-        $pattern =  "/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/i";
-        // $replacement = '<a href="$0">$0</a>';
-        $content = preg_replace_callback($pattern, [$this, "parseUrlThumbnail"], $content);
-        return $content;
-    }
-
     #[Route('/quacks', name: 'quacks')]
     public function index(EntityManagerInterface $entityManager, MarkdownParserInterface $markdownParser): Response
     {
@@ -236,7 +134,7 @@ class QuackController extends AbstractController
     }
 
     #[Route('/quacks/add', name: 'create_quack')]
-    public function create(EntityManagerInterface $entityManager, ValidatorInterface $validator, SluggerInterface $slugger, Request $request): Response
+    public function create(EntityManagerInterface $entityManager, ValidatorInterface $validator, SluggerInterface $slugger, UrlHelper $urlHelper, Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
         if ($request->getMethod() !== 'POST') {
@@ -247,7 +145,7 @@ class QuackController extends AbstractController
 
         $quack = new Quack();
         $duck = $entityManager->getRepository(Duck::class)->findOneBy(['id' => $this->getUser()->getId()]);
-        $quack = $this->updateQuackFields($validator, $quack, $request->get('content'), $duck);
+        $quack = $this->updateQuackFields($validator, $urlHelper, $quack, $request->get('content'), $duck);
         $newFileName = $this->handleFileUpload($request, $slugger);
         $tags = $this->handleTags($request->get('tags'));
 
@@ -268,7 +166,7 @@ class QuackController extends AbstractController
 
     #[Route('quacks/{id}/edit', name: 'edit_quack')]
     // automatic instantiation with the id route parameter, avoiding the getRepository->find thing
-    public function edit(EntityManagerInterface $entityManager, ValidatorInterface $validator, SluggerInterface $slugger, Request $request, Quack $quack): Response
+    public function edit(EntityManagerInterface $entityManager, ValidatorInterface $validator, SluggerInterface $slugger, UrlHelper $urlHelper, Request $request, Quack $quack): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
         if ($this->getUser()->getId() !== $quack->getDuck()->getId()) {
@@ -289,9 +187,9 @@ class QuackController extends AbstractController
         $entityManager->flush();
 
         $duck = $quack->getDuck();
-        $previousId = $quack->getId();
+        $previousId = null !== $quack->getOldId() ? $quack->getOldId() : $quack->getId();
         $quack = new Quack();
-        $quack = $this->updateQuackFields($validator, $quack, $request->get('content'), $duck, $previousId);
+        $quack = $this->updateQuackFields($validator, $urlHelper, $quack, $request->get('content'), $duck, $previousId);
 
         $newFileName = $this->handleFileUpload($request, $slugger);
         $tags = $this->handleTags($request->get('tags'));

@@ -40,10 +40,10 @@
 						<ul class="list-reset lg:flex justify-end flex-1 items-center">
 							<li class="mr-3">
 								<a class="inline-block py-2 px-4 {% if operation is not defined or operation == 'home' or operation == 'diffs' %} text-yellow-300 font-bold {% else %} text-gray-600 hover:text-gray-900 {% endif %} no-underline" href="{{ path('quacks') }}">
-									{% if operation is not defined or operation == 'home' %}
-										Home
-									{% elseif operation == 'diffs'%}
+									{% if operation == 'diffs' %}
 										Diffs
+									{% else %}
+										Home
 									{% endif %}
 								</a>
 							</li>

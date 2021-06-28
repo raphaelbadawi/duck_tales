@@ -20,7 +20,7 @@
 						{% if quack.getPicture() is not empty %}<img style="left: calc(100% - 8rem);" class="relative w-32 mr-4" src="/uploads/pictures/{{ quack.getPicture() }}"></img>
 					{% endif %}
 				</div>
-				<hr class="mb-4">
+				{% if quack != quacks|last %}<hr class="mb-4">{% endif %}
 			{% endfor %}
 		</div>
 	</div>
