@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Knp\Bundle\MarkdownBundle\MarkdownParserInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -18,6 +19,11 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class QuackController extends AbstractController
 {
+    public function __construct(RequestStack $requestStack)
+    {
+        $this->requestStack = $requestStack;
+    }
+
     // abstraction to avoid code duplication
     private function fetchQuacks(EntityManagerInterface $entityManager): array
     {
@@ -31,7 +37,7 @@ class QuackController extends AbstractController
     }
 
     // abstraction to avoid code duplication
-    private function updateQuackFields(ValidatorInterface $validator, $quack, String $content, Duck $duck): Quack
+    private function updateQuackFields(ValidatorInterface $validator, $quack, String $content, Duck $duck): Quack|Response
     {
         $quack->setContent($this->addUrlTagToContent($content));
         $quack->setCreatedAt(new DateTimeImmutable());
@@ -40,7 +46,9 @@ class QuackController extends AbstractController
         // if needed we'll add some #[Assert()] annotations in the entity
         $errors = $validator->validate($quack);
         if (count($errors) > 0) {
-            return new Response((string) $errors, 400);
+            $session = $this->requestStack->getSession();
+            $session->set('errors', $errors);
+            $this->redirectToRoute('quacks');
         }
 
         return $quack;
@@ -76,10 +84,10 @@ class QuackController extends AbstractController
         return $tagsArray;
     }
 
-    private function parseUrlThumbnail(String $url)
+    private function parseUrlThumbnail(array $urlMatch)
     {
         // parses the url
-        $url = htmlspecialchars(trim($url));
+        $url = htmlspecialchars(trim($urlMatch[0]));
         $urlData = parse_url($url);
         $host = $urlData['host'];
         $file = fopen($url, 'r');
@@ -116,13 +124,65 @@ class QuackController extends AbstractController
         }
 
         $title = ucfirst($title);
+
+        // get the description
+        $desc = '';
+
+        if (array_key_exists('description', $meta_tags)) {
+            $desc = $meta_tags['description'];
+        } else if (array_key_exists('og:description', $meta_tags)) {
+            $desc = $meta_tags['og:description'];
+        } else if (array_key_exists('twitter:description', $meta_tags)) {
+            $desc = $meta_tags['twitter:description'];
+        } else {
+            $desc = 'Description not found!';
+        }
+
+        $desc = ucfirst($desc);
+
+        // get the picture
+        $img_url = '';
+
+        if (array_key_exists('og:image', $meta_tags)) {
+            $img_url = $meta_tags['og:image'];
+        } else if (array_key_exists('og:image:src', $meta_tags)) {
+            $img_url = $meta_tags['og:image:src'];
+        } else if (array_key_exists('twitter:image', $meta_tags)) {
+            $img_url = $meta_tags['twitter:image'];
+        } else if (array_key_exists('twitter:image:src', $meta_tags)) {
+            $img_url = $meta_tags['twitter:image:src'];
+        } else {
+            // image not found in meta tags so find it from content
+            $img_pattern = '/<img[^>]*' . 'src=[\"|\'](.*)[\"|\']/Ui';
+            $images = '';
+            preg_match_all($img_pattern, $content, $images);
+
+            $total_images = is_array($images[1]) ? count($images[1]) : 0;
+            if ($total_images > 0) {
+                $images = $images[1];
+                for ($i = 0; $i < $total_images; $i++) {
+                    if ($images[$i][0] == "/" ? getimagesize("https://" . $host . $images[$i]) : getimagesize($images[$i])) {
+                        list($width, $height, $type, $attr) = $images[$i][0] == "/" ? getimagesize("https://" . $host . $images[$i]) : getimagesize($images[$i]);
+                        if ($width > 100) { // we don't want a mere icon, so we filter by width
+                            $img_url = $images[$i][0] == "/" ? getimagesize("https://" . $host . $images[$i]) : getimagesize($images[$i]);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        $urlTag = "<div class='border-solid border-black border-2 rounded-sm block w-full'><a href='$url'><div>$title</div>";
+        $urlTag .= "<div ><img class='w-32 mx-auto my-2 rounded-md' src='$img_url' alt='Picture preview'></div>";
+        $urlTag .= "<div class='text-sm'>$desc</div>";
+        $urlTag .= "<div>$host</div></a></div>";
+        return $urlTag;
     }
 
     private function addUrlTagToContent(String $content): array|String|null // I was wrong this is even worse
     {
         $pattern =  "/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)/i";
-        $replacement = '<a href="$0">$0</a>';
-        $content = preg_replace($pattern, $replacement, $content);
+        // $replacement = '<a href="$0">$0</a>';
+        $content = preg_replace_callback($pattern, [$this, "parseUrlThumbnail"], $content);
         return $content;
     }
 
@@ -132,11 +192,18 @@ class QuackController extends AbstractController
         $quacks = $this->fetchQuacks($entityManager);
         $quacks = array_map(fn ($quack) => $quack->setContent($markdownParser->transformMarkDown($quack->getContent())), $quacks);
 
+        $session = $this->requestStack->getSession();
+        if (null !== $session->get('errors') && !empty($session->get('errors'))) {
+            $errors = $session->get('errors');
+            $session->set('errors', null);
+        }
+
         return $this->render('quack/index.html.twig', [
             // user will be important to display things accordingly to roles and id
             'user' => $this->getUser(),
             'quacks' => $quacks,
-            'operation' => 'home'
+            'operation' => 'home',
+            'errors' => isset($errors) ? $errors : null
         ]);
     }
 
