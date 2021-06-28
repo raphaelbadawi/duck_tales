@@ -7,6 +7,7 @@ use App\Entity\Duck;
 use App\Entity\Quack;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\Mapping\Entity;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -37,11 +38,15 @@ class QuackController extends AbstractController
     }
 
     // abstraction to avoid code duplication
-    private function updateQuackFields(ValidatorInterface $validator, $quack, String $content, Duck $duck): Quack|Response
+    private function updateQuackFields(ValidatorInterface $validator, $quack, String $content, Duck $duck, Int $previousId = 0): Quack|Response
     {
         $quack->setContent($this->addUrlTagToContent($content));
         $quack->setCreatedAt(new DateTimeImmutable());
         $quack->setDuck($duck);
+        if (null === $quack->getOldId() && $previousId > 0) {
+            $quack->setOldId($previousId);
+        }
+        $quack->setIsOld(false);
 
         // if needed we'll add some #[Assert()] annotations in the entity
         $errors = $validator->validate($quack);
@@ -192,6 +197,7 @@ class QuackController extends AbstractController
         $quacks = $this->fetchQuacks($entityManager);
         $quacks = array_map(fn ($quack) => $quack->setContent($markdownParser->transformMarkDown($quack->getContent())), $quacks);
 
+        // if errors have been set before a hard redirect to quacks (which is home for now)
         $session = $this->requestStack->getSession();
         if (null !== $session->get('errors') && !empty($session->get('errors'))) {
             $errors = $session->get('errors');
@@ -204,6 +210,28 @@ class QuackController extends AbstractController
             'quacks' => $quacks,
             'operation' => 'home',
             'errors' => isset($errors) ? $errors : null
+        ]);
+    }
+
+    #[Route('/quacks/{id}/diffs', name: 'diffs_quack')]
+    public function showDiffs(EntityManagerInterface $entityManager,  MarkdownParserInterface $markdownParser, Quack $quack): Response
+    {
+        // fetch previous iterations of the same post
+        if (null !== $quack->getOldId()) {
+            $oldQuacks = $entityManager->getRepository(Quack::class)->findBy(['oldId' => $quack->getOldId()]);
+            $originalQuack = $entityManager->getRepository(Quack::class)->findOneBy(['id' => $quack->getOldId()]);
+            $theWholeQuackHistory = [$originalQuack, ...$oldQuacks];
+            $theWholeQuackHistory = array_map(fn ($quack) => $quack->setContent($markdownParser->transformMarkDown($quack->getContent())), $theWholeQuackHistory);
+        } else {
+            $theWholeQuackHistory = [];
+        }
+
+        $quack->setContent($markdownParser->transformMarkDown($quack->getContent()));
+
+        return $this->render('quack/single/diffs.html.twig', [
+            'quack' => $quack,
+            'quacks' => $theWholeQuackHistory,
+            'operation' => 'diffs'
         ]);
     }
 
@@ -240,7 +268,7 @@ class QuackController extends AbstractController
 
     #[Route('quacks/{id}/edit', name: 'edit_quack')]
     // automatic instantiation with the id route parameter, avoiding the getRepository->find thing
-    public function edit(EntityManagerInterface $entityManager, ValidatorInterface $validator, Request $request, Quack $quack): Response
+    public function edit(EntityManagerInterface $entityManager, ValidatorInterface $validator, SluggerInterface $slugger, Request $request, Quack $quack): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
         if ($this->getUser()->getId() !== $quack->getDuck()->getId()) {
@@ -256,11 +284,26 @@ class QuackController extends AbstractController
             ]);
         }
 
-        $quack = $this->updateQuackFields($validator, $quack, $request->get('content'), $quack->getDuck());
+        $quack->setIsOld(true);
+        $entityManager->persist($quack);
+        $entityManager->flush();
+
+        $duck = $quack->getDuck();
+        $previousId = $quack->getId();
+        $quack = new Quack();
+        $quack = $this->updateQuackFields($validator, $quack, $request->get('content'), $duck, $previousId);
+
+        $newFileName = $this->handleFileUpload($request, $slugger);
+        $tags = $this->handleTags($request->get('tags'));
+
+        if ($newFileName) {
+            $quack->setPicture($newFileName);
+        }
+        foreach ($tags as $tag) {
+            $quack->addTag($tag);
+        }
 
         $entityManager->persist($quack);
-
-        // insert happens only at flush
         $entityManager->flush();
 
         return $this->redirectToRoute('quacks');
@@ -275,7 +318,18 @@ class QuackController extends AbstractController
             return $this->redirectToRoute('quacks');
         }
 
+        // fetch previous iterations of the same post
+        if (null !== $quack->getOldId()) {
+            $oldQuacks = $entityManager->getRepository(Quack::class)->findBy(['oldId' => $quack->getOldId()]);
+            $originalQuack = $entityManager->getRepository(Quack::class)->findOneBy(['id' => $quack->getOldId()]);
+        }
+
+        // delete all iterations of the same post
         $entityManager->remove($quack);
+        foreach ($oldQuacks as $oldQuack) {
+            $entityManager->remove($oldQuack);
+        }
+        $entityManager->remove($originalQuack);
         $entityManager->flush();
 
         return $this->redirectToRoute('quacks');

@@ -46,6 +46,16 @@ class Quack
      */
     private $tags;
 
+    /**
+     * @ORM\Column(type="integer", nullable=true)
+     */
+    private $oldId;
+
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    private $isOld;
+
     public function __construct()
     {
         $this->tags = new ArrayCollection();
@@ -130,6 +140,30 @@ class Quack
                 $tag->setQuack(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getOldId(): ?int
+    {
+        return $this->oldId;
+    }
+
+    public function setOldId(?int $oldId): self
+    {
+        $this->oldId = $oldId;
+
+        return $this;
+    }
+
+    public function getIsOld(): ?bool
+    {
+        return $this->isOld;
+    }
+
+    public function setIsOld(?bool $isOld): self
+    {
+        $this->isOld = $isOld;
 
         return $this;
     }
