@@ -21,6 +21,17 @@ class Quack
     private $id;
 
     /**
+     * @ORM\OneToMany(targetEntity="Quack", mappedBy="parent")
+     */
+    protected $comments;
+
+    /**
+     * @ORM\ManyToOne(targetEntity="Quack", inversedBy="comments")
+     * @ORM\JoinColumn(name="parent", referencedColumnName="id")
+     */
+    protected $parent;
+
+    /**
      * @ORM\Column(type="text")
      * @Assert\Length(max=280, maxMessage = "Your content must me at less than {{ limit }} characters long.")
      */
@@ -59,11 +70,33 @@ class Quack
     public function __construct()
     {
         $this->tags = new ArrayCollection();
+        $this->children = new ArrayCollection();
     }
 
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getParent()
+    {
+        return $this->parent;
+    }
+
+    public function setParent(Quack $parent)
+    {
+        $this->parent = $parent;
+    }
+
+    public function getComments()
+    {
+        return $this->children;
+    }
+
+    public function addComment(Quack $comment)
+    {
+        $this->comments[] = $comment;
+        $comment->setParent($this);
     }
 
     public function getContent(): ?string
