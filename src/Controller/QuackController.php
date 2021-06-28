@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use stdClass;
 use App\Entity\Tag;
 use App\Entity\Duck;
 use App\Entity\Quack;
@@ -63,6 +64,13 @@ class QuackController extends AbstractController
     {
         $quackPicture = $request->files->get('picture');
         if ($quackPicture) {
+            $authorizedExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+            if (!in_array($quackPicture->guessExtension(), $authorizedExtensions) || filesize($quackPicture) > 2000000) {
+                dd("invalid");
+                $session = $this->requestStack->getSession();
+                $session->set('errors', (object) ['message' => 'Invalid extension or file too heavy.']);
+                $this->redirectToRoute('quacks');
+            }
             $originalFilename = pathinfo($quackPicture->getClientOriginalName(), PATHINFO_FILENAME);
             // this is needed to safely include the file name as part of the URL
             $safeFilename = $slugger->slug($originalFilename);

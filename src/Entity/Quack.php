@@ -90,7 +90,7 @@ class Quack
 
     public function getComments()
     {
-        return $this->children;
+        return $this->comments;
     }
 
     public function addComment(Quack $comment)
