@@ -33,7 +33,7 @@ class Quack
 
     /**
      * @ORM\Column(type="text")
-     * @Assert\Length(max=280, maxMessage = "Your content must me at less than {{ limit }} characters long.")
+     * @Assert\Length(min=4, minMessage = "Your content must be at least {{ limit }} characters long.", max=280, maxMessage = "Your content must me at less than {{ limit }} characters long.")
      */
     private $content;
 
@@ -84,7 +84,7 @@ class Quack
         return $this->id;
     }
 
-    public function getParent(): self
+    public function getParent(): ?self
     {
         return $this->parent;
     }
