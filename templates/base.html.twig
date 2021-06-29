@@ -70,7 +70,7 @@
 							{% endif %}
 							{% if is_granted('ROLE_ADMIN') %}
 								<li class="mr-3">
-									<a class="inline-block py-2 px-4 {% if operation == 'admin' %} text-yellow-300 font-bold {% else %} text-gray-600 hover:text-gray-900 {% endif %} no-underline" href="{{path('profile')}}">Admin Dashboard</a>
+									<a class="inline-block py-2 px-4 {% if operation == 'admin' %} text-yellow-300 font-bold {% else %} text-gray-600 hover:text-gray-900 {% endif %} no-underline" href="{{path('admin')}}">Admin Dashboard</a>
 								</li>
 							{% endif %}
 							<li class="mr-3">
