@@ -1,3 +1,3 @@
 <div class="w-full px-4 md:px-6 text-2xl opacity-75 text-yellow-300 text-shadow text-leading-normal font-bold mb-4" style="font-family: Georgia, serif">
-	{% if operation == 'edit' %} Edit Quack {% elseif operation == 'create' %} Create Quack {% elseif operation == 'diffs' %} Diffs for Quack n°{{ id }} {% else %} Quacks {% endif %}
+	{% if operation == 'edit' %} Edit Quack {% elseif operation == 'create' %} Create Quack {% elseif operation == 'diffs' %} Diffs for Quack n°{{ id }}  {% elseif operation == 'search' %} Search results for {{ searchValue }}{% else %} Quacks {% endif %}
 </div>

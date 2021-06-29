@@ -19,6 +19,20 @@ class QuackRepository extends ServiceEntityRepository
         parent::__construct($registry, Quack::class);
     }
 
+    /**
+     * @return Quack[]
+     */
+    public function searchContent($value)
+    {
+        return $this->createQueryBuilder('q')
+            ->andWhere('q.content like :val')
+            ->setParameter('val', $value)
+            ->orderBy('q.created_at', 'DESC')
+            ->setMaxResults(50)
+            ->getQuery()
+            ->getResult();
+    }
+
     // /**
     //  * @return Quack[] Returns an array of Quack objects
     //  */

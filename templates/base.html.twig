@@ -7,7 +7,7 @@
 			{% endblock %}
 		</title>
 		{# Run `composer require symfony/webpack-encore-bundle`
-										           and uncomment the following Encore helpers to start using Symfony UX #}
+																				           and uncomment the following Encore helpers to start using Symfony UX #}
 		{% block stylesheets %}
 			{{ encore_entry_link_tags('app') }}
 		{% endblock %}
@@ -21,13 +21,20 @@
 	<body>
 		<div class="bg-gray-100 font-sans leading-normal tracking-normal min-h-screen">
 			<nav id="header" class="fixed-w-full z-10 top-0 bg-gradient-to-b from-green-500 to-transparent">
-				<div class="w-full md:max-w-4xl mx-auto flex flex-wrap items-center justify-between mt-0 py-3">
+				<div class="w-full md:max-w-4xl mx-auto flex items-center justify-between mt-0 py-3">
 					<div class="pl-4">
 						<img class="w-4 inline" src="{{ asset('img/icons/duck.svg') }}" alt="Duck">
 						<a class="text-gray-900 text-base no-underline hover:no-underline font-extrabold" href="{{ path('quacks') }}">
 							Quacks III Arena
 						</a>
 					</div>
+					<form class="relative" method="POST" action="{{ path('search_quack') }}">
+						<input type="text" name="search" class="h-8 w-32 pr-8 pl-5 mx-5 rounded z-0 focus:shadow focus:outline-none">
+						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute top-1 right-8" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+						</svg>
+						<button class="hidden" type="submit"></button>
+					</form>
 					<div class="block lg:hidden pr-4">
 						<button id="nav-toggle" class="flex items-center px-3 py-2 border rounded text-gray-500 border-gray-600 hover:text-gray-900 hover:border-green-700 appearance-none focus:outline-none">
 							<svg class="fill-current h-3 w-3" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
@@ -61,6 +68,11 @@
 									<a class="inline-block py-2 px-4 {% if operation == 'profile' %} text-yellow-300 font-bold {% else %} text-gray-600 hover:text-gray-900 {% endif %} no-underline" href="{{path('profile')}}">My Profile</a>
 								</li>
 							{% endif %}
+							{% if is_granted('ROLE_ADMIN') %}
+								<li class="mr-3">
+									<a class="inline-block py-2 px-4 {% if operation == 'admin' %} text-yellow-300 font-bold {% else %} text-gray-600 hover:text-gray-900 {% endif %} no-underline" href="{{path('profile')}}">Admin Dashboard</a>
+								</li>
+							{% endif %}
 							<li class="mr-3">
 								<a class="inline-block py-2 px-4 {% if operation == 'login' or operation == 'register' %} text-yellow-300 font-bold {% else %} text-gray-600 hover:text-gray-900 {% endif %} no-underline" href="{% if is_granted('ROLE_USER') %} {{path('app_logout')}} {% else %} {{path('app_login')}} {% endif %}">
 									{% if is_granted('ROLE_USER') %}
@@ -77,6 +89,6 @@
 				</div>
 			</nav>
 			{% block body %}{% endblock %}
-		</div>
+		</body>
 	</body>
-</html>
+</html></div></body></html>

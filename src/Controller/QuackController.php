@@ -205,6 +205,7 @@ class QuackController extends AbstractController
         $this->denyAccessUnlessGranted(QuackVoter::EDIT, $quack);
 
         if ($request->getMethod() !== 'POST') {
+            // early draft to refactor the form using the formBuilder; create a custom form type (php bin/console make:form) if the same form is generated at multiple places
             // $form = $this->createFormBuilder($quack)
             //     ->add('tags', CollectionType::class, ['attr' => ['class' => 'flex gap-2'], 'allow_add' => true, 'entry_type' => TextType::class, 'entry_options' => [
             //         'attr' => ['class' => 'py-2 px-4 rounded-md'],
@@ -268,5 +269,18 @@ class QuackController extends AbstractController
         $entityManager->flush();
 
         return $this->redirectToRoute('quacks');
+    }
+
+    #[Route('quacks/search', name: 'search_quack')]
+    public function search(EntityManagerInterface $entityManager, Request $request): Response
+    {
+        $foundQuacks = $entityManager->getRepository(Quack::class)->searchContent($request->get('search'));
+
+        return $this->render('quack/index.html.twig', [
+            'user' => $this->getUser(),
+            'quacks' => $foundQuacks,
+            'operation' => 'search',
+            'searchValue' => $request->get('search')
+        ]);
     }
 }
