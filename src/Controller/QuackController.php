@@ -197,10 +197,7 @@ class QuackController extends AbstractController
     // automatic instantiation with the id route parameter, avoiding the getRepository->find thing
     public function edit(EntityManagerInterface $entityManager, ValidatorInterface $validator, SluggerInterface $slugger, UrlHelper $urlHelper, Request $request, Quack $quack): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
-        if ($this->getUser()->getId() !== $quack->getDuck()->getId()) {
-            return $this->redirectToRoute('quacks');
-        }
+        $this->denyAccessUnlessGranted('edit', $quack);
 
         if ($request->getMethod() !== 'POST') {
             $tags = array_map(fn ($duck) => $duck->getContent(), $quack->getTags()->toArray());
@@ -240,10 +237,7 @@ class QuackController extends AbstractController
     // automatic instantiation with the id route parameter, avoiding the getRepository->find thing
     public function destroy(EntityManagerInterface $entityManager, Quack $quack): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_USER');
-        if ($this->getUser()->getId() !== $quack->getDuck()->getId()) {
-            return $this->redirectToRoute('quacks');
-        }
+        $this->denyAccessUnlessGranted('edit', $quack);
 
         // fetch previous iterations of the same post
         if (null !== $quack->getOldId()) {

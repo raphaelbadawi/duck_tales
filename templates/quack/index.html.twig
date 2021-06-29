@@ -18,7 +18,7 @@
 						<div class="absolute right-2">
 							<div class="flex flex-col">
 								<div class="flex content-start justify-center gap-2">
-									{% if user is not null and quack.getDuck().getId() == user.getId() %}
+									{% if is_granted('edit', quack) %}
 										<a class="bg-white p-2 rounded-xl shadow-sm text-sm uppercase cursor-pointer hover:shadow-xl transition-all ease-in" href="{{ path('edit_quack', { id: quack.getId() }) }}">
 											Edit
 										</a>
@@ -48,8 +48,8 @@
 				<div class="flex flex-row justify-end gap-4">
 					<form action="{{ path('like_quack', { id: quack.getId() }) }}" method="POST"><button type="submit"><img class="cursor-pointer w-8 transform transition-all ease-in hover:scale-125" src={% if user in quack.getDucks() %} "/img/icons/like-filled.svg" {% else %} "/img/icons/like.svg" {% endif %} alt="Comment"></button></form>
 					<img id="toggleComment{{ quack.getId() }}" class="toggleComment cursor-pointer w-8 transform transition-all ease-in hover:scale-125" src="/img/icons/chat.svg" alt="Like">
-				{% endif %}
 				</div>
+				{% endif %}
 			</div>
 			{% if user is not null %}
 				<div id="commentBox{{ quack.getId() }}" class="-mt-3 mb-2 p-0 bg-gradient-to-br from-yellow-300 to-transparent transition-all ease-in h-0 overflow-hidden">
