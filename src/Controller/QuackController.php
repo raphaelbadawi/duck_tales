@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use stdClass;
 use App\Entity\Tag;
 use App\Entity\Duck;
 use App\Entity\Quack;
@@ -29,7 +28,7 @@ class QuackController extends AbstractController
     // abstraction to avoid code duplication
     private function fetchQuacks(EntityManagerInterface $entityManager): array
     {
-        $quacks = $entityManager->getRepository(Quack::class)->findAll();
+        $quacks = $entityManager->getRepository(Quack::class)->findBy([], ['created_at' => 'DESC']);
 
         if (!$quacks) {
             $quacks = [];
@@ -97,8 +96,30 @@ class QuackController extends AbstractController
         return $tagsArray;
     }
 
+    #[Route('/quacks/{id}/like', name: 'like_quack')]
+    public function toggleLike(EntityManagerInterface $entityManager, Request $request, Quack $quack): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        if ($request->getMethod() !== 'POST') {
+            return $this->redirectToRoute('quacks');
+        }
+
+        $duck = $entityManager->getRepository(Duck::class)->findOneBy(['id' => $this->getUser()->getId()]);
+        if (in_array($quack, [...$duck->getLikes()])) {
+            $duck->removeLike($quack);
+        } else {
+            $duck->addLike($quack);
+        }
+
+
+        $entityManager->persist($quack);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('quacks');
+    }
+
     #[Route('/quacks', name: 'quacks')]
-    public function index(EntityManagerInterface $entityManager, MarkdownParserInterface $markdownParser): Response
+    public function index(EntityManagerInterface $entityManager, MarkdownParserInterface $markdownParser, Request $request): Response
     {
         $quacks = $this->fetchQuacks($entityManager);
         $quacks = array_map(fn ($quack) => $quack->setContent($markdownParser->transformMarkDown($quack->getContent())), $quacks);
