@@ -7,6 +7,7 @@ use App\Entity\Duck;
 use App\Entity\Quack;
 use DateTimeImmutable;
 use App\Service\UrlHelper;
+use App\Security\QuackVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -14,7 +15,11 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Knp\Bundle\MarkdownBundle\MarkdownParserInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
@@ -197,11 +202,20 @@ class QuackController extends AbstractController
     // automatic instantiation with the id route parameter, avoiding the getRepository->find thing
     public function edit(EntityManagerInterface $entityManager, ValidatorInterface $validator, SluggerInterface $slugger, UrlHelper $urlHelper, Request $request, Quack $quack): Response
     {
-        $this->denyAccessUnlessGranted('edit', $quack);
+        $this->denyAccessUnlessGranted(QuackVoter::EDIT, $quack);
 
         if ($request->getMethod() !== 'POST') {
+            // $form = $this->createFormBuilder($quack)
+            //     ->add('tags', CollectionType::class, ['attr' => ['class' => 'flex gap-2'], 'allow_add' => true, 'entry_type' => TextType::class, 'entry_options' => [
+            //         'attr' => ['class' => 'py-2 px-4 rounded-md'],
+            //         'label' => false
+            //     ]])
+            //     ->add('content', TextType::class, ['attr' => ['class' => 'py-2 px-4 rounded-md'], 'label' => 'Edit Content'])
+            //     ->add('save', SubmitType::class, ['attr' => ['class' => 'py-2 px-4 m-2 text-white bg-red-500 rounded-md'], 'label' => 'Submit Quack'])
+            //     ->getForm();
             $tags = array_map(fn ($duck) => $duck->getContent(), $quack->getTags()->toArray());
             return $this->render('quack/create.html.twig', [
+                // 'form' => $form->createView(),
                 'tags' => $tags,
                 'quack' => $quack,
                 'operation' => 'edit'
@@ -237,7 +251,7 @@ class QuackController extends AbstractController
     // automatic instantiation with the id route parameter, avoiding the getRepository->find thing
     public function destroy(EntityManagerInterface $entityManager, Quack $quack): Response
     {
-        $this->denyAccessUnlessGranted('edit', $quack);
+        $this->denyAccessUnlessGranted(QuackVoter::EDIT, $quack);
 
         // fetch previous iterations of the same post
         if (null !== $quack->getOldId()) {

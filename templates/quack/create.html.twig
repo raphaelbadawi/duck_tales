@@ -1,6 +1,49 @@
 {% extends 'base.html.twig' %}
 {% block title %}Quacks
 {% endblock %}
+{% block javascripts %}
+{{ parent () }}
+<!-- <script>
+    
+	function ready(fn) {
+		if (document.readyState != 'loading'){
+			fn();
+		} else {
+			document.addEventListener('DOMContentLoaded', fn);
+		}
+	}
+
+	function addFormToCollection(collectionHolderClass) {
+		const collectionHolder = document.querySelector('.' + collectionHolderClass);
+		const prototype = collectionHolder.dataset.prototype;
+		const index = collectionHolder.dataset.index;
+
+		let newForm = prototype;
+		newForm = newForm.replace(/__name__/g, index);
+
+		collectionHolder.dataset.index = +collectionHolder.dataset.index + 1;
+
+		let newFormLi = document.createElement("li");
+		newFormLi.insertAdjacentHTML("beforeend", newForm);
+		collectionHolder.insertAdjacentElement("beforeend", newFormLi);
+	}
+	
+
+	function triggerAddTag() {
+		const tagsCollectionHolder = document.querySelector('ul.tags');
+		tagsCollectionHolder.dataset.index =  document.querySelectorAll('ul.tags input').length;
+		
+		const addItemButton = document.querySelector('.add_item_link');
+	
+		addItemButton.addEventListener('click', (e) => {
+			const collectionHolderClass = e.target.dataset.collectionHolderClass;
+			addFormToCollection(collectionHolderClass);
+		});
+   }
+
+   ready(triggerAddTag);
+</script> -->
+{% endblock %}
 {% block body %}
 	{% if errors is defined and errors is not empty %}
 		{% for error in errors %}
@@ -10,77 +53,56 @@
 		{% endfor %}
 	{% endif %}
 	<div class="container w-full md:max-w-3xl mx-auto pt-20">
+		<!-- {{ form_start(form) }}
+		{% if quack is not defined or (quack is defined and quack.getParent() is null) %}
+			<div class="flex flex-col gap-2 items-center border-b border-green-700 py-2">
+				<ul class="tags flex gap-2" data-prototype="{{ form_widget(form.tags.vars.prototype)|e('html_attr') }}">
+					{% for tag in form.tags %}
+						<li>{{ form_row(tag) }}</li>
+					{% endfor %}
+				</ul>
+				<button type="button" class="bg-blue-500 p-2 text-white rounded-md add_item_link" data-collection-holder-class="tags">Add a tag</button>
+				<div class="flex gap-2 items-center">
+					<div>
+						{{ form_label(form.content) }}
+					</div>
+					<div>
+						{{ form_widget(form.content) }}
+					</div>
+				</div>
+				<div>
+					{{ form_row(form.save) }}
+				</div>
+			</div>
+		{% endif %}
+		{{ form_end(form) }} -->
 		{% include 'quack/title.html.twig' %}
 		<hr class="mt-4"/>
 		<form class="w-full" method="POST" enctype="multipart/form-data">
 			{% if quack is not defined or (quack is defined and quack.getParent() is null) %}
-			<div class="flex items-center border-b border-green-700 py-2">
-				<input name="tags" type="text" placeholder="Separate your tags with commas" {% if quack is defined %} value="{{ tags|join(', ') }}" {% endif %} class="
-					          placeholder-green-900
-					          bg-transparent
-					          w-1/2
-					          appearance-none
-					          border-none
-					          focus:outline-none
-					          leading-tight
-					          px-2
-					          py-3
-					          mr-3
-					        "/>
-				<label for="quackFileUpload" class="w-1/2 flex flex-col cursor-pointer uppercase items-center px-4 py-6 rounded-me shadow-me tracking-wide border border-white hover:text-white text-gray-700 hover:bg-green-900 ease-linear transition-all duration-150">
-					<img id="quackFileUploadIcon" class="mb-2 w-4" src="{{ asset('img/icons/duck.svg') }}"></img>
+				<div class="flex items-center border-b border-green-700 py-2">
+					<input name="tags" type="text" placeholder="Separate your tags with commas" {% if quack is defined %} value="{{ tags|join(', ') }}" {% endif %} class=" placeholder-green-900 bg-transparent w-1/2 appearance-none border-none focus:outline-none leading-tight px-2 py-3 mr-3
+																																																					        "/>
+					<label for="quackFileUpload" class="w-1/2 flex flex-col cursor-pointer uppercase items-center px-4 py-6 rounded-me shadow-me tracking-wide border border-white hover:text-white text-gray-700 hover:bg-green-900 ease-linear transition-all duration-150">
+						<img id="quackFileUploadIcon" class="mb-2 w-4" src="{{ asset('img/icons/duck.svg') }}"></img>
 					<span>Upload your gros bec here</span>
 					<input id="quackFileUpload" name="picture" type="file" class="hidden"/>
 				</label>
 			</div>
-			{% endif %}
-			<div class="flex items-center border-b border-green-700 py-2">
-				<input name="content" class="
-							placeholder-green-900
-							appearance-none
-							bg-transparent
-							border-none
-							w-full
-							text-white
-							mr-3
-							py-1
-							px-2
-							leading-tight
-							focus:outline-none
-							" type="text" placeholder="Quack Here!" aria-label="Content" {% if quack is defined %} value="{{ quack.getContent() }}" {% endif %}/>
-				<button class="
-							flex-shrink-0
-							bg-green-700
-							hover:bg-green-900
-							border-green-700
-							hover:border-green-900
-							text-sm
-							border-4
-							text-white
-							py-1
-							px-2
-							rounded
-							" type="submit">
-					Quack!
+		{% endif %}
+		<div class="flex items-center border-b border-green-700 py-2">
+			<input name="content" class="placeholder-green-900 appearance-none bg-transparent border-none w-full text-white mr-3 py-1 px-2 leading-tight focus:outline-none" type="text" placeholder="Quack Here!" aria-label="Content" {% if quack is defined %} value="{{ quack.getContent() }}" {% endif %}/>
+			<button class="flex-shrink-0 bg-green-700 hover:bg-green-900 border-green-700 hover:border-green-900 text-sm border-4 text-white py-1 px-2 rounded" type="submit">
+				Quack!
+			</button>
+			<a href="{{ path('quacks') }}">
+				<button class="flex-shrink-0 border-transparent border-4 text-green-700 hover:text-green-900 text-sm py-1 px-2 rounded" type="button">
+					Cancel
 				</button>
-				<a href="{{ path('quacks') }}">
-					<button class="
-							flex-shrink-0
-							border-transparent border-4
-							text-green-700
-							hover:text-green-900
-							text-sm
-							py-1
-							px-2
-							rounded
-							" type="button">
-						Cancel
-					</button>
-				</a>
-			</div>
-		</form>
-		<div id="picturePreviewContainer" class="relative mt-8 w-1/2 mx-auto {% if quack is not defined or quack.getPicture() is null %} opacity-0 {% endif %} transition-all duration-500 ease-in">
-			<img id="picturePreview" class="object-cover absolute" {% if quack is defined and quack.getPicture() is not null %} src="/uploads/pictures/{{ quack.getPicture() }}" {% endif %}></img>
-			<span id="closePicturePreview" class="absolute right-2 top-2 cursor-pointer text-white text-shadow text-2xl">&times;</span>
+			</a>
 		</div>
-	</div>{% endblock %}
+	</form>
+	<div id="picturePreviewContainer" class="relative mt-8 w-1/2 mx-auto {% if quack is not defined or quack.getPicture() is null %} opacity-0 {% endif %} transition-all duration-500 ease-in">
+		<img id="picturePreview" class="object-cover absolute" {% if quack is defined and quack.getPicture() is not null %} src="/uploads/pictures/{{ quack.getPicture() }}" {% endif %}></img>
+	<span id="closePicturePreview" class="absolute right-2 top-2 cursor-pointer text-white text-shadow text-2xl">&times;</span>
+</div></div>{% endblock %}
