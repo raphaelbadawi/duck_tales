@@ -132,6 +132,22 @@ class Duck implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    // helpers for the admin dashboard
+    public function hasRoleAdmin()
+    {
+        return in_array('ROLE_ADMIN', $this->getRoles()) ? 'Yes' : 'No';
+    }
+
+    public function setHasRoleAdmin($isAdmin)
+    {
+        if ('Yes' === $isAdmin && !in_array('ROLE_ADMIN', $this->getRoles())) {
+            $this->setRoles(['ROLE_ADMIN']);
+        }
+        if ('No' === $isAdmin && in_array('ROLE_ADMIN', $this->getRoles())) {
+            $this->setRoles([]);
+        }
+    }
+
     /**
      * @see PasswordAuthenticatedUserInterface
      */
