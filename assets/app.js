@@ -64,3 +64,17 @@ if (commentsTogglers.length > 0) {
     });
   }
 }
+
+// better UX for searchbar
+const searchInput = document.querySelector('[name="search"]');
+const searchIconEl = document.querySelector('#searchIcon');
+
+searchInput.addEventListener("focus", () => {
+  searchInput.classList.add("w-64");
+  searchIconEl.classList.add("scale-125");
+})
+
+searchInput.addEventListener("focusout", () => {
+  searchInput.classList.remove("w-64");
+  searchIconEl.classList.remove("scale-125");
+})

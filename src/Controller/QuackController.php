@@ -271,16 +271,16 @@ class QuackController extends AbstractController
         return $this->redirectToRoute('quacks');
     }
 
-    #[Route('quacks/search', name: 'search_quack')]
+    #[Route('quacks/s', name: 'search_quack')]
     public function search(EntityManagerInterface $entityManager, Request $request): Response
     {
-        $foundQuacks = $entityManager->getRepository(Quack::class)->searchContent($request->get('search'));
+        $foundQuacks = $entityManager->getRepository(Quack::class)->searchContent($request->query->get('q'));
 
         return $this->render('quack/index.html.twig', [
             'user' => $this->getUser(),
             'quacks' => $foundQuacks,
             'operation' => 'search',
-            'searchValue' => $request->get('search')
+            'searchValue' => $request->query->get('q')
         ]);
     }
 }

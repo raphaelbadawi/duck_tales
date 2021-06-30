@@ -21,32 +21,24 @@
 	<body>
 		<div class="bg-gray-100 font-sans leading-normal tracking-normal min-h-screen">
 			<nav id="header" class="fixed-w-full z-10 top-0 bg-gradient-to-b from-green-500 to-transparent">
-				<div class="w-full md:max-w-4xl mx-auto flex items-center justify-between mt-0 py-3">
+				<div class="w-full md:max-w-5xl mx-auto flex items-center justify-between mt-0 py-3">
 					<div class="pl-4">
 						<img class="w-4 inline" src="{{ asset('img/icons/duck.svg') }}" alt="Duck">
 						<a class="text-gray-900 text-base no-underline hover:no-underline font-extrabold" href="{{ path('quacks') }}">
 							Quacks III Arena
 						</a>
 					</div>
-					<form class="relative" method="POST" action="{{ path('search_quack') }}">
-						<input type="text" name="search" class="h-8 w-32 pr-8 pl-5 mx-5 rounded z-0 focus:shadow focus:outline-none">
-						<svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 absolute top-1 right-8" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+					<form class="relative" method="GET" action="{{ path('search_quack') }}">
+						<input type="text" name="q" class="transform transition-all ease-in h-8 w-48 pr-8 pl-5 mx-5 rounded z-0 focus:shadow focus:outline-none">
+						<svg id="searchIcon" xmlns="http://www.w3.org/2000/svg" class="transform transition-all ease-in h-6 w-6 absolute top-1 right-8" fill="none" viewbox="0 0 24 24" stroke="currentColor">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
 						</svg>
 						<button class="hidden" type="submit"></button>
 					</form>
-					<div class="block lg:hidden pr-4">
-						<button id="nav-toggle" class="flex items-center px-3 py-2 border rounded text-gray-500 border-gray-600 hover:text-gray-900 hover:border-green-700 appearance-none focus:outline-none">
-							<svg class="fill-current h-3 w-3" viewbox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-								<title>Home</title>
-								<path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/>
-							</svg>
-						</button>
-					</div>
 					<div class="w-full flex-grow lg:items-center lg:w-auto hidden lg:block mt-2 lg:mt-0 bg-gray-100 md:bg-transparent z-20" id="nav-content">
 						<ul class="list-reset lg:flex justify-end flex-1 items-center">
 							<li class="mr-3">
-								<a class="inline-block py-2 px-4 {% if operation is not defined or operation == 'home' or operation == 'diffs' %} text-yellow-300 font-bold {% else %} text-gray-600 hover:text-gray-900 {% endif %} no-underline" href="{{ path('quacks') }}">
+								<a class="inline-block py-2 px-4 {% if operation is not defined or operation == 'home' or operation == 'diffs' or operation == "search" %} text-yellow-300 font-bold {% else %} text-gray-600 hover:text-gray-900 {% endif %} no-underline" href="{{ path('quacks') }}">
 									{% if operation == 'diffs' %}
 										Diffs
 									{% else %}

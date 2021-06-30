@@ -26,7 +26,7 @@ class QuackRepository extends ServiceEntityRepository
     {
         return $this->createQueryBuilder('q')
             ->andWhere('q.content like :val')
-            ->setParameter('val', $value)
+            ->setParameter('val', "%$value%")
             ->orderBy('q.created_at', 'DESC')
             ->setMaxResults(50)
             ->getQuery()
