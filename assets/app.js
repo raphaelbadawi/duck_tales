@@ -66,7 +66,7 @@ if (commentsTogglers.length > 0) {
 }
 
 // better UX for searchbar
-const searchInput = document.querySelector('[name="search"]');
+const searchInput = document.querySelector('[name="q"]');
 const searchIconEl = document.querySelector('#searchIcon');
 
 searchInput.addEventListener("focus", () => {

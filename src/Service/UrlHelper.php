@@ -10,13 +10,9 @@ class UrlHelper
         $url = htmlspecialchars(trim($urlMatch[0]));
         $urlData = parse_url($url);
         $host = $urlData['host'];
-        $file = fopen($url, 'r');
 
         // adds it to a string content
-        $content = '';
-        while (!feof($file)) {
-            $content .= fgets($file, 1024);
-        }
+        $content = file_get_contents($url);
 
         // get meta tags as an entrypoint to relevant informations
         $meta_tags = get_meta_tags($url);
