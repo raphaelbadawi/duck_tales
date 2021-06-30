@@ -2,20 +2,28 @@
 
 namespace App\EventListener;
 
+use Exception;
 use App\Entity\Quack;
 use Doctrine\ORM\Events;
 use Doctrine\Common\EventSubscriber;
+use Symfony\Component\HttpClient\HttpClient;
 use Doctrine\Persistence\Event\LifecycleEventArgs;
 
 class DatabaseActivitySubscriber implements EventSubscriber
 {
+    private $httpClient;
+
+    public function __construct()
+    {
+        $this->httpClient = HttpClient::create();
+    }
     // this method can only return the event names; you cannot define a
     // custom method name to execute when each event triggers
     public function getSubscribedEvents(): array
     {
         return [
             Events::postPersist,
-            Events::postRemove,
+            Events::preRemove,
             Events::postUpdate,
         ];
     }
@@ -28,7 +36,7 @@ class DatabaseActivitySubscriber implements EventSubscriber
         $this->syncWithElasticSearch('persist', $args);
     }
 
-    public function postRemove(LifecycleEventArgs $args): void
+    public function preRemove(LifecycleEventArgs $args): void
     {
         $this->syncWithElasticSearch('remove', $args);
     }
@@ -50,10 +58,8 @@ class DatabaseActivitySubscriber implements EventSubscriber
 
         switch ($action) {
             case "persist":
-                $this->addToElasticSearch($args->getObject());
-                break;
             case "update":
-                $this->updateInElasticSearch($args->getObject());
+                $this->insertToElasticSearch($args->getObject());
                 break;
             case "remove":
                 $this->removeFromElasticSearch($args->getObject());
@@ -61,15 +67,41 @@ class DatabaseActivitySubscriber implements EventSubscriber
         }
     }
 
-    private function addToElasticSearch(Quack $quack): void
+    private function insertToElasticSearch(Quack $quack): void
     {
+        if ($quack->getIsOld()) {
+            $this->removeFromElasticSearch($quack);
+            return;
+        }
+        $response = $this->httpClient->request('POST', $_ENV['ELASTICSEARCH_ENDPOINT'] . '/quacks/_doc/' . $quack->getId(), $this->mapQuackToElasticSearch($quack));
     }
 
-    private function updateInElasticSearch(Quack $quack): void
+    private function mapQuackToElasticSearch(Quack $quack): array
     {
+        return [
+            "json" => [
+                'author' => $quack->getDuck()->getDuckname(),
+                'content' => $quack->getContent(),
+                'createdAt' => $quack->getCreatedAt()
+            ]
+        ];
     }
 
     private function removeFromElasticSearch(Quack $quack): void
     {
+        $needle = $this->httpClient->request('POST', $_ENV['ELASTICSEARCH_ENDPOINT'] . '/quacks/_doc/_search', [
+            "json" => [
+                "query" => [
+                    "match" => [
+                        "_id" => $quack->getId()
+                    ]
+                ]
+            ]
+        ]);
+        $needle = json_decode($needle->getContent());
+        if ($needle->hits->total->value == 0) {
+            return;
+        }
+        $response = $this->httpClient->request('DELETE', $_ENV['ELASTICSEARCH_ENDPOINT'] . '/quacks/_doc/' . $quack->getId());
     }
 }

@@ -15,13 +15,10 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Knp\Bundle\MarkdownBundle\MarkdownParserInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
-use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class QuackController extends AbstractController
 {
@@ -272,9 +269,25 @@ class QuackController extends AbstractController
     }
 
     #[Route('quacks/s', name: 'search_quack')]
-    public function search(EntityManagerInterface $entityManager, Request $request): Response
+    public function search(HttpClientInterface $httpClient, EntityManagerInterface $entityManager, Request $request): Response
     {
-        $foundQuacks = $entityManager->getRepository(Quack::class)->searchContent($request->query->get('q'));
+        // $foundQuacks = $entityManager->getRepository(Quack::class)->searchContent($request->query->get('q'));
+
+        // using ElasticSearch allows us to "approximate" the searched value and order results by relevancy
+        $foundQuacks = $httpClient->request('POST', $_ENV['ELASTICSEARCH_ENDPOINT'] . '/quacks/_doc/_search', [
+            "json" => [
+                "query" => [
+                    "query_string" => [
+                        "query" => "content:" . $request->query->get('q') . "~3"
+                    ]
+                ]
+            ]
+        ]);
+
+        // get the results
+        $foundQuacks = json_decode($foundQuacks->getContent())->hits->hits;
+        // get the related Quack entities
+        $foundQuacks = array_map(fn ($quack) => $entityManager->getRepository(Quack::class)->findOneBy(['id' => $quack->_id]), $foundQuacks);
 
         return $this->render('quack/index.html.twig', [
             'user' => $this->getUser(),

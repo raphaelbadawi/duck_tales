@@ -3,23 +3,16 @@ version: "3.7"
 services:
   # ElasticSearch Server
   elasticsearch:
-    container_name: sb-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:7.13.2
     ports:
-      - "9209:9200"
+      - "9200:9200"
     environment:
       - "discovery.type=single-node"
-      - "bootstrap.memory_lock=true"
-      - "ES_JAVA_OPTS=-Xms1G -Xmx1G"
-      - "xpack.security.enabled=false"
-      - "http.cors.enabled=true"
-      - "http.cors.allow-origin=*"
 
-  # Elasticsearch Head Manager (fork of mobz/elasticsearch-head for elasticsearch 6)
-  elasticsearch-head:
-    container_name: sb-elasticsearch-head
-    depends_on:
-      - elasticsearch
-    image: tobias74/elasticsearch-head
+  # GUI
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.13.2
+    environment:
+      - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200/"
     ports:
-      - "9109:9100"
+      - 5601:5601
