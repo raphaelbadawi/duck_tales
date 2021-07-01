@@ -3,8 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Duck;
+use App\Entity\ApiToken;
+use Symfony\Component\Mime\Email;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use KnpU\OAuth2ClientBundle\Client\ClientRegistry;
@@ -51,8 +54,7 @@ class SecurityController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_USER');
 
         if ($request->getMethod() === 'POST') {
-            $user = $this->getUser();
-            $duck = $entityManager->getRepository(Duck::class)->findOneBy(['id' => $user->getId()]);
+            $duck = $this->getUser();
             $duck->setFirstname(!empty($request->get('first_name')) ? $request->get('first_name') : $duck->getFirstname());
             $duck->setLastName(!empty($request->get('last_name')) ? $request->get('last_name') : $duck->getLastName());
             $duck->setDuckName(!empty($request->get('duck_name')) ? $request->get('duck_name') : $duck->getDuckName());
@@ -123,6 +125,27 @@ class SecurityController extends AbstractController
     #[Route('/logout', name: 'app_logout')]
     public function logout()
     {
+        return $this->redirectToRoute('quacks');
+    }
+
+    #[Route('/send_token', name: 'send_token')]
+    public function sendToken(EntityManagerInterface $entityManager, MailerInterface $mailer): Response
+    {
+        $user = $this->getUser();
+        foreach ($user->getApiTokens() as $token) {
+            if ($token->isExpired()) {
+                $entityManager->remove($token);
+            }
+        }
+
+        $token = new ApiToken($user);
+        $email = (new Email())
+            ->from('postmaster@ducktales.com')
+            ->to('badawiraphael@posteo.net')
+            ->subject('Your Duck Tales API token!')
+            ->html('<p>Your new API token is ' . $token->getToken() . '</p>');
+
+        $mailer->send($email);
         return $this->redirectToRoute('quacks');
     }
 }

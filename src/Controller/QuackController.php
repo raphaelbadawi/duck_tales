@@ -106,7 +106,7 @@ class QuackController extends AbstractController
             return $this->redirectToRoute('quacks');
         }
 
-        $duck = $entityManager->getRepository(Duck::class)->findOneBy(['id' => $this->getUser()->getId()]);
+        $duck = $this->getUser();
         if (in_array($quack, [...$duck->getLikes()])) {
             $duck->removeLike($quack);
         } else {
@@ -176,7 +176,7 @@ class QuackController extends AbstractController
         }
 
         $quack = new Quack();
-        $duck = $entityManager->getRepository(Duck::class)->findOneBy(['id' => $this->getUser()->getId()]);
+        $duck = $this->getUser();
         $quack = $this->updateQuackFields($validator, $urlHelper, $quack, $request->get('content'), $duck);
         $newFileName = $this->handleFileUpload($request, $slugger);
         $tags = $this->handleTags($request->get('tags'));

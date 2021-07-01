@@ -84,7 +84,7 @@ class Duck implements UserInterface, PasswordAuthenticatedUserInterface
     private $likes;
 
     /**
-     * @ORM\OneToMany(targetEntity=ApiToken::class, mappedBy="duck", orphanRemoval=true)
+     * @ORM\OneToMany(targetEntity=ApiToken::class, mappedBy="duck", orphanRemoval=true, cascade={"persist"})
      */
     private $apiTokens;
 
