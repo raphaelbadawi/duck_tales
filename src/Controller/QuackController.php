@@ -120,6 +120,7 @@ class QuackController extends AbstractController
         return $this->redirectToRoute('quacks');
     }
 
+    #[Route('/', name: 'home')]
     #[Route('/quacks', name: 'quacks')]
     public function index(EntityManagerInterface $entityManager, MarkdownParserInterface $markdownParser, Request $request): Response
     {

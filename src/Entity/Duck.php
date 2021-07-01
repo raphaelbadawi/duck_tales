@@ -2,16 +2,24 @@
 
 namespace App\Entity;
 
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\DuckRepository;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Core\Annotation\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
 /**
  * @ORM\Entity(repositoryClass=DuckRepository::class)
+ * @ApiResource(
+ *  normalizationContext={"groups"={"duck:read"}},
+ *  denormalizationContext={"groups"={"duck:write"}},
+ *  order={"created_at"="DESC"},
+ *  paginationEnabled=false
+ * )
  */
 class Duck implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -25,6 +33,7 @@ class Duck implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @ORM\Column(type="string", length=180, unique=true)
      */
+    #[Groups(['duck:read'])]
     private $email;
 
     /**
@@ -37,24 +46,28 @@ class Duck implements UserInterface, PasswordAuthenticatedUserInterface
      * @ORM\Column(type="string")
      * @Assert\Length(min=4, minMessage = "Your password must me at least {{ limit }} characters long.")
      */
+    #[Groups(['duck:write'])]
     private $password;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\Length(min=4, minMessage = "Your first name must me at least {{ limit }} characters long.")
      */
+    #[Groups(['duck:read', 'duck:write'])]
     private $firstname;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\Length(min=4, minMessage = "Your last name must me at least {{ limit }} characters long.")
      */
+    #[Groups(['duck:read', 'duck:write'])]
     private $lastname;
 
     /**
      * @ORM\Column(type="string", length=255, unique=true),
      * @Assert\Length(min=4, minMessage = "Your duck name must me at least {{ limit }} characters long.")
      */
+    #[Groups(['duck:read', 'duck:write'])]
     private $duckname;
 
     /**
@@ -72,10 +85,16 @@ class Duck implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $likes;
 
+    /**
+     * @ORM\OneToMany(targetEntity=ApiToken::class, mappedBy="duck", orphanRemoval=true)
+     */
+    private $apiTokens;
+
     public function __construct()
     {
         $this->quacks = new ArrayCollection();
         $this->likes = new ArrayCollection();
+        $this->apiTokens = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -279,6 +298,36 @@ class Duck implements UserInterface, PasswordAuthenticatedUserInterface
         if ($this->likes->contains($like)) {
             $this->likes->removeElement($like);
         }
+        return $this;
+    }
+
+    /**
+     * @return Collection|ApiToken[]
+     */
+    public function getApiTokens(): Collection
+    {
+        return $this->apiTokens;
+    }
+
+    public function addApiToken(ApiToken $apiToken): self
+    {
+        if (!$this->apiTokens->contains($apiToken)) {
+            $this->apiTokens[] = $apiToken;
+            $apiToken->setDuck($this);
+        }
+
+        return $this;
+    }
+
+    public function removeApiToken(ApiToken $apiToken): self
+    {
+        if ($this->apiTokens->removeElement($apiToken)) {
+            // set the owning side to null (unless already changed)
+            if ($apiToken->getDuck() === $this) {
+                $apiToken->setDuck(null);
+            }
+        }
+
         return $this;
     }
 }
