@@ -2,8 +2,10 @@
 
 namespace App\Entity;
 
-use App\Repository\ApiTokenRepository;
+use App\Entity\Duck;
+use DateTimeImmutable;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ApiTokenRepository;
 
 /**
  * @ORM\Entity(repositoryClass=ApiTokenRepository::class)
@@ -33,6 +35,13 @@ class ApiToken
      */
     private $duck;
 
+    public function __construct(Duck $duck)
+    {
+        $this->token = bin2hex(random_bytes(60));
+        $this->duck = $duck;
+        $this->expiresAt = new \DateTimeImmutable('+1 hour');
+    }
+
     public function getId(): ?int
     {
         return $this->id;
@@ -43,23 +52,19 @@ class ApiToken
         return $this->token;
     }
 
-    public function setToken(string $token): self
-    {
-        $this->token = $token;
-
-        return $this;
-    }
-
     public function getExpiresAt(): ?\DateTimeImmutable
     {
         return $this->expiresAt;
     }
 
-    public function setExpiresAt(\DateTimeImmutable $expiresAt): self
+    public function isExpired(): bool
     {
-        $this->expiresAt = $expiresAt;
+        return $this->getExpiresAt() <= new \DateTime();
+    }
 
-        return $this;
+    public function renewExpiresAt()
+    {
+        $this->expiresAt = new \DateTime('+1 hour');
     }
 
     public function getDuck(): ?Duck

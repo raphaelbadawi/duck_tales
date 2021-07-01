@@ -297,4 +297,23 @@ class QuackController extends AbstractController
             'searchValue' => $request->query->get('q')
         ]);
     }
+
+    #[Route('api/quacks/s', name: 'api_search_quack')]
+    public function apiSearch(HttpClientInterface $httpClient, EntityManagerInterface $entityManager, Request $request): Response
+    {
+        $foundQuacks = $httpClient->request('POST', $_ENV['ELASTICSEARCH_ENDPOINT'] . '/quacks/_doc/_search', [
+            "json" => [
+                "query" => [
+                    "match" => [
+                        "tags" => $request->query->get('q')
+                    ]
+                ]
+            ]
+        ]);
+
+        // get the results
+        $foundQuacks = json_decode($foundQuacks->getContent())->hits->hits;
+
+        return $this->json($foundQuacks, 200, []);
+    }
 }

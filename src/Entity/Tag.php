@@ -9,11 +9,6 @@ use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=TagRepository::class)
- * @ApiResource(
- *  normalizationContext={"groups"={"tag:read"}},
- *  denormalizationContext={"groups"={"tag:write"}},
- *  paginationEnabled=false
- * )
  */
 class Tag
 {
@@ -25,13 +20,11 @@ class Tag
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      */
-    #[Groups(['tag:read'])]
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
      */
-    #[Groups(['tag:read', 'tag:write'])]
     private $content;
 
     /**

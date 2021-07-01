@@ -22,6 +22,8 @@ security:
             custom_authenticators:
                 - App\Security\LoginFormAuthenticator
                 - App\Security\GoogleAuthenticator
+                - App\Security\ApiTokenAuthenticator
+            entry_point: App\Security\LoginFormAuthenticator
             logout:
                 path: app_logout
                 # where to redirect after logout

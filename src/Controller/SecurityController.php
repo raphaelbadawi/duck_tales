@@ -15,6 +15,18 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class SecurityController extends AbstractController
 {
+    #[Route('/api/whoami', name: "api_whoami")]
+    public function accountApi(Request $request, EntityManagerInterface $entityManager)
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+
+        $user = $this->getUser();
+        $duck = $entityManager->getRepository(Duck::class)->findOneBy(['id' => $user->getId()]);
+        return $this->json($duck, 200, [], [
+            'groups' => ['duck:read'],
+        ]);
+    }
+
     #[Route('/connect/google', name: "connect_google_start")]
     public function connectAction(ClientRegistry $clientRegistry)
     {

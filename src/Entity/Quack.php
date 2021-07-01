@@ -17,6 +17,14 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiResource(
  *  normalizationContext={"groups"={"quack:read"}},
  *  denormalizationContext={"groups"={"quack:write"}},
+ *  collectionOperations={
+ *    "get"={},
+ *    "post"={"security"="is_granted('ROLE_USER')", "security_message"="Only users can add quacks."}
+ *  },
+ *  itemOperations={
+ *    "put"={"security"="is_granted('ROLE_ADMIN') or (object.duck == user and previous_object.duck == user)", "security_message"="Sorry, but you are not the actual quack owner."},
+ *    "delete"={"security"="is_granted('ROLE_ADMIN') or (object.duck == user and previous_object.duck == user)", "security_message"="Sorry, but you are not the actual quack owner."} 
+ *  },
  *  order={"created_at"="DESC"},
  *  paginationEnabled=false
  * )
@@ -34,9 +42,9 @@ class Quack
     /**
      * @ORM\OneToMany(targetEntity="Quack", mappedBy="parent")
      */
-    #[ApiProperty(readableLink: true, writableLink: true)]
+    #[ApiProperty(readableLink: true)]
     #[ApiSubresource()]
-    #[Groups(['quack:read', 'quack:write'])]
+    #[Groups(['quack:read'])]
     protected $comments;
 
     /**
@@ -61,9 +69,9 @@ class Quack
     /**
      * @ORM\ManyToOne(targetEntity=Duck::class, inversedBy="quacks")
      */
-    #[ApiProperty(readableLink: true, writableLink: true)]
+    #[ApiProperty(readableLink: true)]
     #[ApiSubresource()]
-    #[Groups(['quack:read', 'quack:write'])]
+    #[Groups(['quack:read'])]
     private $duck;
 
     /**
@@ -75,8 +83,6 @@ class Quack
     /**
      * @ORM\OneToMany(targetEntity=Tag::class, mappedBy="quack", orphanRemoval=true, cascade={"persist"})
      */
-    #[ApiProperty(readableLink: true, writableLink: true)]
-    #[Groups(['quack:read', 'quack:write'])]
     private $tags;
 
     /**

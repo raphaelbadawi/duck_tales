@@ -82,7 +82,8 @@ class DatabaseActivitySubscriber implements EventSubscriber
             "json" => [
                 'author' => $quack->getDuck()->getDuckname(),
                 'content' => $quack->getContent(),
-                'createdAt' => $quack->getCreatedAt()
+                'createdAt' => $quack->getCreatedAt(),
+                'tags' => array_map(fn ($tag) => $tag->getContent(), $quack->getTags()->toArray())
             ]
         ];
     }
