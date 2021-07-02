@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Entity\QuackHistory;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\QuackRepository;
 use Doctrine\Common\Collections\Collection;
@@ -14,6 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * @ORM\Entity(repositoryClass=QuackRepository::class)
+ * @ORM\EntityListeners({"App\EventListener\QuackListener"})
  * @ApiResource(
  *  normalizationContext={"groups"={"quack:read"}},
  *  denormalizationContext={"groups"={"quack:write"}},
@@ -40,7 +42,7 @@ class Quack
     private $id;
 
     /**
-     * @ORM\OneToMany(targetEntity="Quack", mappedBy="parent")
+     * @ORM\OneToMany(targetEntity="Quack", mappedBy="parent", orphanRemoval=true, cascade={"persist"})
      */
     #[ApiProperty(readableLink: true)]
     #[ApiSubresource()]
@@ -86,14 +88,9 @@ class Quack
     private $tags;
 
     /**
-     * @ORM\Column(type="integer", nullable=true)
+     * @ORM\OneToMany(targetEntity=QuackHistory::class, mappedBy="original_quack", orphanRemoval=true, cascade={"persist"})
      */
-    private $oldId;
-
-    /**
-     * @ORM\Column(type="boolean")
-     */
-    private $isOld;
+    private $history;
 
     /**
      * @ORM\ManyToMany(targetEntity=Duck::class, mappedBy="likes", orphanRemoval=true, cascade={"persist"})
@@ -211,29 +208,24 @@ class Quack
         return $this;
     }
 
-    public function getOldId(): ?int
+    /**
+     * @return Collection|QuackHistory[]
+     */
+    public function getHistory(): ?Collection
     {
-        return $this->oldId;
+        return $this->history;
     }
 
-    public function setOldId(?int $oldId): self
+    public function addHistory(QuackHistory $quack): self
     {
-        $this->oldId = $oldId;
+        if (!$this->history?->contains($quack)) {
+            $this->history[] = $quack;
+            $quack->setOriginalQuack($this);
+        }
 
         return $this;
     }
 
-    public function getIsOld(): ?bool
-    {
-        return $this->isOld;
-    }
-
-    public function setIsOld(?bool $isOld): self
-    {
-        $this->isOld = $isOld;
-
-        return $this;
-    }
 
     public function getDucks(): Collection
     {

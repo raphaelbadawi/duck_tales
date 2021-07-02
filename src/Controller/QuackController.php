@@ -40,15 +40,11 @@ class QuackController extends AbstractController
     }
 
     // abstraction to avoid code duplication
-    private function updateQuackFields(ValidatorInterface $validator, UrlHelper $urlHelper, $quack, String $content, Duck $duck, Int $previousId = 0): Quack|Response
+    private function updateQuackFields(ValidatorInterface $validator, UrlHelper $urlHelper, $quack, String $content, Duck $duck): Quack|Response
     {
         $quack->setContent($urlHelper->addUrlTagToContent($content));
         $quack->setCreatedAt(new DateTimeImmutable());
         $quack->setDuck($duck);
-        if (null === $quack->getOldId() && $previousId > 0) {
-            $quack->setOldId($previousId);
-        }
-        $quack->setIsOld(false);
 
         // if needed we'll add some #[Assert()] annotations in the entity
         $errors = $validator->validate($quack);
@@ -126,6 +122,9 @@ class QuackController extends AbstractController
     {
         $quacks = $this->fetchQuacks($entityManager);
         $quacks = array_map(fn ($quack) => $quack->setContent($markdownParser->transformMarkDown($quack->getContent())), $quacks);
+        foreach ($quacks as $quack) {
+            $quack->likes = $entityManager->getRepository(Quack::class)->countLikes($quack->getId());
+        }
 
         // if errors have been set before a hard redirect to quacks (which is home for now)
         $session = $this->requestStack->getSession();
@@ -147,19 +146,13 @@ class QuackController extends AbstractController
     public function showDiffs(EntityManagerInterface $entityManager,  MarkdownParserInterface $markdownParser, Quack $quack): Response
     {
         // fetch previous iterations of the same post
-        if (null !== $quack->getOldId()) {
-            $oldQuacks = $entityManager->getRepository(Quack::class)->findBy(['oldId' => $quack->getOldId()]);
-            $originalQuack = $entityManager->getRepository(Quack::class)->findOneBy(['id' => $quack->getOldId()]);
-            $theWholeQuackHistory = [$originalQuack, ...$oldQuacks];
-            $theWholeQuackHistory = array_map(fn ($quack) => $quack->setContent($markdownParser->transformMarkDown($quack->getContent())), $theWholeQuackHistory);
+        if (null !== $quack->getHistory()) {
+            $theWholeQuackHistory = array_map(fn ($quack) => $quack->setContent($markdownParser->transformMarkDown($quack->getContent())), $quack->getHistory()->toArray());
         } else {
             $theWholeQuackHistory = [];
         }
 
-        $quack->setContent($markdownParser->transformMarkDown($quack->getContent()));
-
         return $this->render('quack/single/diffs.html.twig', [
-            'quack' => $quack,
             'quacks' => $theWholeQuackHistory,
             'operation' => 'diffs'
         ]);
@@ -221,14 +214,8 @@ class QuackController extends AbstractController
             ]);
         }
 
-        $quack->setIsOld(true);
-        $entityManager->persist($quack);
-        $entityManager->flush();
-
         $duck = $quack->getDuck();
-        $previousId = null !== $quack->getOldId() ? $quack->getOldId() : $quack->getId();
-        $quack = new Quack();
-        $quack = $this->updateQuackFields($validator, $urlHelper, $quack, $request->get('content'), $duck, $previousId);
+        $quack = $this->updateQuackFields($validator, $urlHelper, $quack, $request->get('content'), $duck);
 
         $newFileName = $this->handleFileUpload($request, $slugger);
         $tags = $this->handleTags($request->get('tags'));
@@ -252,19 +239,7 @@ class QuackController extends AbstractController
     {
         $this->denyAccessUnlessGranted(QuackVoter::EDIT, $quack);
 
-        // fetch previous iterations of the same post
-        if (null !== $quack->getOldId()) {
-            $oldQuacks = $entityManager->getRepository(Quack::class)->findBy(['oldId' => $quack->getOldId()]);
-            $originalQuack = $entityManager->getRepository(Quack::class)->findOneBy(['id' => $quack->getOldId()]);
-        }
-
-        // delete all iterations of the same post
         $entityManager->remove($quack);
-        foreach ($oldQuacks as $oldQuack) {
-            $entityManager->remove($oldQuack);
-        }
-        $entityManager->remove($originalQuack);
-        $entityManager->flush();
 
         return $this->redirectToRoute('quacks');
     }

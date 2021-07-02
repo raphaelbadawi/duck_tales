@@ -11,7 +11,7 @@
 	{% endif %}
 	<div class="container w-full md:max-w-3xl mx-auto pt-20">
 		{% include 'quack/title.html.twig' %}
-		{% for quack in quacks|filter(quack => not quack.getIsOld() and quack.getParent() is null) %}
+		{% for quack in quacks|filter(quack => quack.getParent() is null) %}
 			<div class="relative p-6 bg-gradient-to-tr from-green-100 to-transparent rounded-md shadow-md mb-2">
 				<div class="absolute right-2">
 					<div class="flex flex-col">
@@ -43,8 +43,10 @@
 			{% endif %}
 		</div>
 		{% if user is not null %}
-			<div class="flex flex-row justify-end gap-4">
+			<div class="flex flex-row items-center justify-end gap-4">
+				<span>{{ quack.likes }}</span>
 				<form action="{{ path('like_quack', { id: quack.getId() }) }}" method="POST">
+
 					<button type="submit"><img class="cursor-pointer w-8 transform transition-all ease-in hover:scale-125" src={% if user in quack.getDucks() %} "/img/icons/like-filled.svg" {% else %} "/img/icons/like.svg" {% endif %} alt="Comment"></button>
 				</form>
 				<img id="toggleComment{{ quack.getId() }}" class="toggleComment cursor-pointer w-8 transform transition-all ease-in hover:scale-125" src="/img/icons/chat.svg" alt="Like">

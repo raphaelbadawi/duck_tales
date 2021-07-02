@@ -33,6 +33,20 @@ class QuackRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+    /**
+     * @return Int
+     */
+    public function countLikes($value)
+    {
+        return $this->createQueryBuilder('q')
+        ->innerJoin('q.ducks', 'd')
+        ->andWhere(':val MEMBER OF d.likes')
+        ->setParameter('val', $value)
+        ->select('count(d.id)')
+        ->getQuery()
+        ->getSingleScalarResult();
+    }
+
     // /**
     //  * @return Quack[] Returns an array of Quack objects
     //  */

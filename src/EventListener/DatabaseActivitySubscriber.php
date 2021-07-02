@@ -69,10 +69,6 @@ class DatabaseActivitySubscriber implements EventSubscriber
 
     private function insertToElasticSearch(Quack $quack): void
     {
-        if ($quack->getIsOld()) {
-            $this->removeFromElasticSearch($quack);
-            return;
-        }
         $response = $this->httpClient->request('POST', $_ENV['ELASTICSEARCH_ENDPOINT'] . '/quacks/_doc/' . $quack->getId(), $this->mapQuackToElasticSearch($quack));
     }
 
