@@ -7,7 +7,7 @@
 			{% endblock %}
 		</title>
 		{# Run `composer require symfony/webpack-encore-bundle`
-																				           and uncomment the following Encore helpers to start using Symfony UX #}
+																																				           and uncomment the following Encore helpers to start using Symfony UX #}
 		{% block stylesheets %}
 			{{ encore_entry_link_tags('app') }}
 		{% endblock %}
@@ -38,7 +38,7 @@
 					<div class="w-full flex-grow lg:items-center lg:w-auto hidden lg:block mt-2 lg:mt-0 bg-gray-100 md:bg-transparent z-20" id="nav-content">
 						<ul class="list-reset lg:flex justify-end flex-1 items-center">
 							<li class="mr-3">
-								<a class="inline-block py-2 px-4 {% if operation is not defined or operation == 'home' or operation == 'diffs' or operation == "search" %} text-yellow-300 font-bold {% else %} text-gray-600 hover:text-gray-900 {% endif %} no-underline" href="{{ path('quacks') }}">
+								<a class="inline-block py-2 px-4 {% if operation is not defined or operation == 'home' or operation == 'diffs' or operation == " search" %} text-yellow-300 font-bold {% else %} text-gray-600 hover:text-gray-900 {% endif %} no-underline" href="{{ path('quacks') }}">
 									{% if operation == 'diffs' %}
 										Diffs
 									{% else %}
@@ -81,6 +81,7 @@
 				</div>
 			</nav>
 			{% block body %}{% endblock %}
+			{% block chat %}{% endblock %}
 		</body>
 	</body>
 </html></div></body></html>

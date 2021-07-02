@@ -30,7 +30,6 @@ class CommentController extends AbstractController
 
         $duck = $entityManager->getRepository(Duck::class)->findOneBy(['id' => $this->getUser()->getId()]);
         $comment->setDuck($duck);
-        $comment->setIsOld(false);
 
         // validate comment
         $errors = $validator->validate($comment);

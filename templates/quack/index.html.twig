@@ -46,7 +46,6 @@
 			<div class="flex flex-row items-center justify-end gap-4">
 				<span>{{ quack.likes }}</span>
 				<form action="{{ path('like_quack', { id: quack.getId() }) }}" method="POST">
-
 					<button type="submit"><img class="cursor-pointer w-8 transform transition-all ease-in hover:scale-125" src={% if user in quack.getDucks() %} "/img/icons/like-filled.svg" {% else %} "/img/icons/like.svg" {% endif %} alt="Comment"></button>
 				</form>
 				<img id="toggleComment{{ quack.getId() }}" class="toggleComment cursor-pointer w-8 transform transition-all ease-in hover:scale-125" src="/img/icons/chat.svg" alt="Like">
@@ -65,4 +64,6 @@
 	{% endif %}
 {% else %}
 	All ducks have been hunt.
-{% endfor %}</div>{% endblock %}
+{% endfor %}</div>
+{% include 'messenger/chat.html.twig' %}
+{% endblock %}

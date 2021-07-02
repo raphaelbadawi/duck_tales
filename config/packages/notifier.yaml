@@ -8,7 +8,7 @@ framework:
         #    nexmo: '%env(NEXMO_DSN)%'
         channel_policy:
             # use chat/slack, chat/telegram, sms/twilio or sms/nexmo
-            # TODO: use chat/mercure for urgent channel
+            # TODO: use Mercure instead for urgent channel
             urgent: ['email']
             high: ['email']
             medium: ['email']

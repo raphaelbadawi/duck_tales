@@ -1,5 +1,7 @@
 twig:
     default_path: '%kernel.project_dir%/templates'
+    globals:
+        host: 'http://127.0.0.1:8000/'
 
 when@test:
     twig:

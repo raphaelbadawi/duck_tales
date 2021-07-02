@@ -3,8 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Duck;
-use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Controller\CamilleChatController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -12,6 +12,7 @@ use Symfony\Component\Notifier\NotifierInterface;
 use Symfony\Component\Notifier\Recipient\Recipient;
 use Symfony\Component\Notifier\Notification\Notification;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Mercure\HubInterface;
 
 class NotificationController extends AbstractController
 {
@@ -43,5 +44,13 @@ class NotificationController extends AbstractController
 
 
         return $this->redirectToRoute('quacks');
+    }
+
+    #[Route("/publish/{topic}", name: "publisher")]
+    public function publishMessageToChat($topic, HubInterface $hub, Request $request): Response
+    {
+        $chat = new CamilleChatController();
+        $chat($topic, $hub, $request);
+        return $this->json(["message" => "published!"], 200);
     }
 }

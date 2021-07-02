@@ -16,3 +16,16 @@ services:
       - "ELASTICSEARCH_HOSTS=http://elasticsearch:9200/"
     ports:
       - 5601:5601
+
+  # Camille Chat Service
+  mercure:
+    image: dunglas/mercure
+    environment:
+      MERCURE_PUBLISHER_JWT_KEY: "coincoin"
+      MERCURE_SUBSCRIBER_JWT_KEY: "coincoin"
+      SERVER_NAME: ":80"
+      MERCURE_EXTRA_DIRECTIVES: |-
+        cors_origins "http://127.0.0.1:8000"
+        anonymous
+    ports:
+      - 8001:80

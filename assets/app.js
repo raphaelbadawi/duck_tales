@@ -67,14 +67,35 @@ if (commentsTogglers.length > 0) {
 
 // better UX for searchbar
 const searchInput = document.querySelector('[name="q"]');
-const searchIconEl = document.querySelector('#searchIcon');
+const searchIconEl = document.querySelector("#searchIcon");
 
 searchInput.addEventListener("focus", () => {
   searchInput.classList.add("w-64");
   searchIconEl.classList.add("scale-125");
-})
+});
 
 searchInput.addEventListener("focusout", () => {
   searchInput.classList.remove("w-64");
   searchIconEl.classList.remove("scale-125");
-})
+});
+
+// toggle messenger
+const chatToggler = document.querySelector("#toggleChat");
+const chatBox = document.querySelector("#chatBox");
+
+chatToggler.addEventListener("click", () => {
+  chatBox.classList.toggle("h-0");
+  chatBox.classList.toggle("h-full");
+});
+
+// Mercure subscriber : refactor it as a Stimulus controller
+// triggered by #chatSubmit
+// targeting the endpoint "publisher" with ["topic" => "chat"] route arg
+function initMercureSubscriber(host, target) {
+  const eventSource = new EventSource(`${host}.well-known/mercure?topic=chat`);
+
+  eventSource.onmessage = (event) => {
+    // will be called every time an update is published by the server
+    console.log(JSON.parse(event.data));
+  };
+}
