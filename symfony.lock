@@ -168,6 +168,9 @@
     "league/oauth2-google": {
         "version": "4.0.0"
     },
+    "lorenzo/pinky": {
+        "version": "1.0.5"
+    },
     "michelf/php-markdown": {
         "version": "1.9.0"
     },
@@ -733,8 +736,17 @@
     "theseer/tokenizer": {
         "version": "1.2.0"
     },
+    "tijsverkoyen/css-to-inline-styles": {
+        "version": "2.2.3"
+    },
+    "twig/cssinliner-extra": {
+        "version": "v3.3.0"
+    },
     "twig/extra-bundle": {
         "version": "v3.3.1"
+    },
+    "twig/inky-extra": {
+        "version": "v3.3.0"
     },
     "twig/intl-extra": {
         "version": "v3.3.0"

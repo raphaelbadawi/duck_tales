@@ -140,8 +140,7 @@ class SecurityController extends AbstractController
 
         $token = new ApiToken($user);
         $email = (new Email())
-            ->from('postmaster@ducktales.com')
-            ->to('badawiraphael@posteo.net')
+            ->to($user->getEmail())
             ->subject('Your Duck Tales API token!')
             ->html('<p>Your new API token is ' . $token->getToken() . '</p>');
 

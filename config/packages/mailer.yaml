@@ -1,3 +1,7 @@
 framework:
     mailer:
-        dsn: '%env(MAILER_DSN)%'
+        dsn: "%env(MAILER_DSN)%"
+        envelope:
+            sender: 'postmaster@ducktales.com'
+        headers:
+            from: "DuckTales Postmaster <postmaster@ducktales.com>"

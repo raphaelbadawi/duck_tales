@@ -49,12 +49,11 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
             );
         }
 
-        // TODO: uncommented for testing purpose, recomment those lines in production
-        // if ($token->isExpired()) {
-        //     throw new CustomUserMessageAuthenticationException(
-        //         'Token expired'
-        //     );
-        // }
+        if ($token->isExpired()) {
+            throw new CustomUserMessageAuthenticationException(
+                'Token expired'
+            );
+        }
 
         $password = json_decode($request->getContent())->password;
         

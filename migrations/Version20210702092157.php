@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20210701141542 extends AbstractMigration
+final class Version20210702092157 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -31,7 +31,7 @@ final class Version20210701141542 extends AbstractMigration
         $this->addSql('CREATE INDEX IDX_EE49F7F112CF4A47 ON duck_quack (duck_id)');
         $this->addSql('CREATE INDEX IDX_EE49F7F1D3950CA9 ON duck_quack (quack_id)');
         $this->addSql('CREATE TABLE quack (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, parent INTEGER DEFAULT NULL, duck_id INTEGER DEFAULT NULL, content CLOB NOT NULL, created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
-        , picture VARCHAR(255) DEFAULT NULL, is_old BOOLEAN NOT NULL)');
+        , picture VARCHAR(255) DEFAULT NULL)');
         $this->addSql('CREATE INDEX IDX_83D44F6F3D8E604F ON quack (parent)');
         $this->addSql('CREATE INDEX IDX_83D44F6F12CF4A47 ON quack (duck_id)');
         $this->addSql('CREATE TABLE quack_history (id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, original_quack_id INTEGER DEFAULT NULL, content VARCHAR(255) NOT NULL, created_at DATETIME NOT NULL --(DC2Type:datetime_immutable)
